@@ -75,7 +75,7 @@ To set your own passwords and secrets, update the following entries in the harbo
 `$ terraform plan`
 
 ## Assuming the previous command output looks good, run terraform
-`$ terrform apply`
+`$ terraform apply`
 
 ## Execute following tasks after jumpbox created 
   
