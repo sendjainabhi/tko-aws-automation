@@ -1,9 +1,9 @@
 {
   "full_name":
     {
-      "provisionerName": "attached",
-      "clusterName": "tkg-wl-aws",
-      "managementClusterName": "attached",
+      "provisionerName": "default",
+      "clusterName": "${CLUSTER_NAME}",
+      "managementClusterName": "${MGMT_CLUSTER_NAME}",
       "name": "tanzu-observability-saas",
     },
   "spec":

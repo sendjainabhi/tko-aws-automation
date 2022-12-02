@@ -1,3 +1,5 @@
+# Copyright 2021 VMware, Inc
+# SPDX-License-Identifier: BSD-2-Clause
 
 resource "aws_subnet" "jump-net" {
   count                   = var.jumpbox ? 1 : 0
@@ -101,7 +103,7 @@ resource "aws_instance" "ubuntu" {
   provisioner "file" {
     content = templatefile("./tkg_vpc/templates/mgmt.tpl",
       {
-        region        = "us-west-2",
+        region        = substr(var.azs[0], 0, length(var.azs[0]) - 1),
         priv_subnet_a = aws_subnet.priv_a.id,
         priv_subnet_b = aws_subnet.priv_b.id,
         priv_subnet_c = aws_subnet.priv_c.id
@@ -113,16 +115,21 @@ resource "aws_instance" "ubuntu" {
         az2           = var.azs[1],
       az3 = var.azs[2] }
     )
-    destination = "/home/ubuntu/tkg-install/mgmt.yaml"
+    destination = "/home/ubuntu/tkg-install/vpc-config-mgmt.yaml"
   }
-
   provisioner "file" {
-    content = templatefile("./tkg_vpc/templates/to-registration.tpl",
+    content = templatefile("./tkg_vpc/templates/harbor-data-values.yaml.tpl",
       {
-        TO_URL = "${var.to_url}",
-      TO_TOKEN = "${var.to_token}", }
+        harbor_admin_password    = var.harbor_admin_password != "" ? var.harbor_admin_password : random_password.harbor_admin_password.result,
+        harbor_secret_key        = random_string.harbor_secret_key.result,
+        harbor_postgres_password = random_password.harbor_postgres_password.result,
+        harbor_core_secret       = random_password.harbor_core_secret.result,
+        harbor_core_xsrf_key     = random_string.harbor_core_xsrf_key.result,
+        harbor_jobservice_secret = random_password.harbor_jobservice_secret.result,
+        harbor_registry_secret   = random_password.harbor_registry_secret.result,
+      }
     )
-    destination = "/home/ubuntu/tkg-install/to-registration.yaml"
+    destination = "/home/ubuntu/tkg-install/harbor-data-values.yaml"
   }
 
 
@@ -173,6 +180,69 @@ resource "aws_security_group" "sg" {
   }
 }
 
-output "jumpbox_dns" {
-  value = aws_eip.bar[*].public_ip
+resource "null_resource" "custer_config_file" {
+  count = var.jumpbox ? 0 : 1
+  triggers = {
+    depends_on = join(",", aws_instance.ubuntu.*.arn)
+  }
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file("${var.jb_keyfile}")
+    host        = var.jumpbox_ip
+  }
+  provisioner "file" {
+    content = templatefile("./tkg_vpc/templates/mgmt.tpl",
+      {
+        region        = substr(var.azs[0], 0, length(var.azs[0]) - 1),
+        priv_subnet_a = aws_subnet.priv_a.id,
+        priv_subnet_b = aws_subnet.priv_b.id,
+        priv_subnet_c = aws_subnet.priv_c.id
+        pub_subnet_a  = aws_subnet.pub_a.id,
+        pub_subnet_b  = aws_subnet.pub_b.id,
+        pub_subnet_c  = aws_subnet.pub_c.id
+        vpc_id        = aws_vpc.main.id,
+        kp_name       = var.jb_key_pair,
+        cluster_name  = var.cluster_name,
+        az1           = var.azs[0],
+        az2           = var.azs[1],
+      az3 = var.azs[2] }
+    )
+    destination = "/home/ubuntu/tkg-install/vpc-config-${var.cluster_name}.yaml"
+  }
+}
+
+resource "random_password" "harbor_admin_password" {
+  length  = 12
+  special = true
+}
+
+resource "random_string" "harbor_secret_key" {
+  length  = 16
+  special = false
+}
+
+resource "random_password" "harbor_postgres_password" {
+  length  = 16
+  special = true
+}
+
+resource "random_password" "harbor_core_secret" {
+  length  = 16
+  special = true
+}
+
+resource "random_string" "harbor_core_xsrf_key" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "harbor_jobservice_secret" {
+  length  = 16
+  special = true
+}
+
+resource "random_password" "harbor_registry_secret" {
+  length  = 16
+  special = true
 }

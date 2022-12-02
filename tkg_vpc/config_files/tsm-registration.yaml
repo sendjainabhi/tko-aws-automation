@@ -1,9 +1,9 @@
 {
   "full_name":
     {
-      "provisionerName": "attached",
-      "managementClusterName": "attached",
-      "clusterName": "tkg-wl-aws",
+      "provisionerName": "default",
+      "managementClusterName": "${MGMT_CLUSTER_NAME}",
+      "clusterName": "${CLUSTER_NAME}",
       "name": "tanzu-service-mesh",
     },
   "spec":

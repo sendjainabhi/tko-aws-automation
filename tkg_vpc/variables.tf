@@ -1,3 +1,5 @@
+# Copyright 2021 VMware, Inc
+# SPDX-License-Identifier: BSD-2-Clause
 variable "vpc_subnet" {
   default     = "192.168.0.0/16"
   description = "The vpc subnet"
@@ -14,6 +16,13 @@ variable "jumpbox" {
   description = "jumpbox? true/false"
   type        = bool
 }
+
+variable "jumpbox_ip" {
+  default     = ""
+  description = "if provided along with jb_key_pair and jb_keyfile, will create a file for installing into this vpc"
+  type        = string
+}
+
 variable "name" {
   default = "nonameset"
 }
@@ -26,7 +35,7 @@ variable "jb_keyfile" {
 }
 
 variable "cluster_name" {
-  default = "tkg-mgmt-aws-20201112203436"
+  default = "tkg-mgmt-aws"
 }
 
 variable "transit_gw" {
@@ -34,10 +43,6 @@ variable "transit_gw" {
 variable "transit_block" {
 }
 
-variable "to_url" {
+variable "harbor_admin_password" {
   default = ""
-}
-
-variable "to_token" {
-  default = ""
-}
+} 

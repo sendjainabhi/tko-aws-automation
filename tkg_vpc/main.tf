@@ -1,3 +1,5 @@
+# Copyright 2021 VMware, Inc
+# SPDX-License-Identifier: BSD-2-Clause
 module "subnet_addrs" {
   source = "hashicorp/subnets/cidr"
 
@@ -175,40 +177,4 @@ resource "aws_route_table" "r" {
   tags = {
     Name = "${var.name}-igw"
   }
-}
-
-output "vpc_id" {
-  value = aws_vpc.main.id
-}
-
-output "subnet_ids" {
-  value = [aws_subnet.priv_a.id, aws_subnet.priv_b.id, aws_subnet.priv_c.id]
-}
-output "priv_subnet_a" {
-  value = aws_subnet.priv_a.id
-}
-output "priv_subnet_b" {
-  value = aws_subnet.priv_b.id
-}
-output "priv_subnet_c" {
-  value = aws_subnet.priv_c.id
-}
-output "pub_subnet_a" {
-  value = aws_subnet.pub_a.id
-}
-output "pub_subnet_b" {
-  value = aws_subnet.pub_b.id
-}
-output "pub_subnet_c" {
-  value = aws_subnet.pub_c.id
-}
-
-output "az1" {
-  value = var.azs[0]
-}
-output "az2" {
-  value = var.azs[1]
-}
-output "az3" {
-  value = var.azs[2]
 }
